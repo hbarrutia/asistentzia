@@ -4,10 +4,38 @@ import pandas as pd
 from openpyxl import load_workbook
 from io import BytesIO
 
-st.title("📘 Generador de Asistentzia")
+st.set_page_config(page_title="Asistentzia Generator", page_icon="📘", layout="wide")
 
-plantilla_file = st.file_uploader("📄 Sube la plantilla Asistentzia_txantiloia.xlsx", type="xlsx")
-origen_file = st.file_uploader("📄 Sube el fichero de origen 1B.xlsx", type="xlsx")
+# Cabecera con logo
+st.markdown("""
+    <div style='display: flex; align-items: center;'>
+        <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Streamlit_logo.svg/512px-Streamlit_logo.svg.png' width='60'/>
+        <h1 style='margin-left: 20px; color: #2c3e50;'>Generador de Asistentzia</h1>
+    </div>
+    <hr style='border: 1px solid #ccc;'>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+    .stButton>button {
+        background-color: #3498db;
+        color: white;
+        border-radius: 5px;
+        padding: 0.5em 1em;
+        font-weight: bold;
+    }
+    .stDownloadButton>button {
+        background-color: #2ecc71;
+        color: white;
+        border-radius: 5px;
+        padding: 0.5em 1em;
+        font-weight: bold;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+plantilla_file = st.file_uploader("📤 Sube la plantilla Asistentzia_txantiloia.xlsx", type="xlsx")
+origen_file = st.file_uploader("📤 Sube el fichero de origen 1B.xlsx", type="xlsx")
 
 if plantilla_file and origen_file:
     df_origen = pd.read_excel(origen_file, header=None, engine='openpyxl')
@@ -44,10 +72,11 @@ if plantilla_file and origen_file:
     dias = ["L", "M", "X", "J", "V"]
     horas_por_modulo = {}
     for nombre_modulo in modulos_nombres:
-        st.subheader(f"Horas para {nombre_modulo}")
+        st.subheader(f"⏱️ Horas para {nombre_modulo}")
         horas = []
-        for dia in dias:
-            horas.append(st.number_input(f"{dia} ({nombre_modulo})", min_value=0, max_value=10, value=0, key=f"{nombre_modulo}_{dia}"))
+        cols = st.columns(5)
+        for idx, dia in enumerate(dias):
+            horas.append(cols[idx].number_input(f"{dia}", min_value=0, max_value=10, value=0, key=f"{nombre_modulo}_{dia}"))
         horas_por_modulo[nombre_modulo] = horas
 
     def rellenar_bloques(ws, fila, repeticiones, horas):
@@ -60,7 +89,7 @@ if plantilla_file and origen_file:
         ws = wb[nombre_modulo]
         horas = horas_por_modulo[nombre_modulo]
         rellenar_bloques(ws, fila=6, repeticiones=11, horas=horas)
-        rellenar_bloques(ws, fila=37, repetices=14, horas=horas)
+        rellenar_bloques(ws, fila=37, repeticiones=14, horas=horas)
         rellenar_bloques(ws, fila=69, repeticiones=13, horas=horas)
 
     output = BytesIO()
